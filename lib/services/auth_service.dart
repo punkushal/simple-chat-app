@@ -33,7 +33,7 @@ class AuthService {
         UserModel userModel = UserModel(
           name: name,
           email: email,
-          createdAt: DateTime.now(),
+          createdAt: Timestamp.now(),
           isOnline: true,
           uid: user.uid,
         );

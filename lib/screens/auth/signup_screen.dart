@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_chat_app/providers/auth_provider.dart';
 import 'package:simple_chat_app/screens/auth/login_screen.dart';
 import 'package:simple_chat_app/services/auth_service.dart';
 import 'package:simple_chat_app/widgets/custom_button.dart';
@@ -44,14 +46,20 @@ class _SignupScreenState extends State<SignupScreen> {
     });
   }
 
-  Future<void> onSigningup() async {
+  void _handleSignUp(AuthProvider authProvider) async {
     if (formKey.currentState!.validate()) {
-      await authService.signUpWithEmailAndPassword(
+      final success = await authProvider.signUp(
         emailController.text.trim(),
         passwordController.text.trim(),
         nameController.text.trim(),
       );
-      return;
+
+      if (success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (ctx) => LoginScreen()),
+        );
+      }
     }
   }
 
@@ -87,6 +95,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "This field required";
+                    }
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -136,11 +149,27 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                 ),
 
-                CustomButton(
-                  buttonLabelText: 'Sign up',
-                  isLoading: false,
-                  onPressed: () {
-                    onSigningup();
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return CustomButton(
+                      buttonLabelText: 'Sign up',
+                      onPressed: () => _handleSignUp(authProvider),
+                      isLoading: authProvider.isLoading,
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    if (authProvider.errorMessage.isNotEmpty) {
+                      return Text(
+                        authProvider.errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
 

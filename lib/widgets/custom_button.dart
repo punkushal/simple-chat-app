@@ -24,7 +24,14 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadiusGeometry.circular(12),
         ),
       ),
-      child: Text(buttonLabelText),
+      child: isLoading
+          ? const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            )
+          : Text(
+              buttonLabelText,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
     );
   }
 }

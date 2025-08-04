@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:simple_chat_app/providers/auth_provider.dart';
 import 'package:simple_chat_app/screens/auth/signup_screen.dart';
+import 'package:simple_chat_app/screens/home_screen.dart';
 import 'package:simple_chat_app/services/auth_service.dart';
 import 'package:simple_chat_app/widgets/custom_button.dart';
 import 'package:simple_chat_app/widgets/custom_text_field.dart';
@@ -33,13 +36,19 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> onLogin() async {
+  void _handleLogin(AuthProvider authProvider) async {
     if (formKey.currentState!.validate()) {
-      await authService.loginWithEmailAndPassword(
+      final success = await authProvider.signIn(
         emailController.text.trim(),
         passwordController.text.trim(),
       );
-      return;
+
+      if (success && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (ctx) => HomeScreen()),
+        );
+      }
     }
   }
 
@@ -90,11 +99,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
 
-                CustomButton(
-                  buttonLabelText: 'Login',
-                  isLoading: false,
-                  onPressed: () {
-                    onLogin();
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return CustomButton(
+                      buttonLabelText: 'Login',
+                      onPressed: () => _handleLogin(authProvider),
+                      isLoading: authProvider.isLoading,
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    if (authProvider.errorMessage.isNotEmpty) {
+                      return Text(
+                        authProvider.errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      );
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
 
