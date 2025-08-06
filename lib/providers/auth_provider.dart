@@ -7,7 +7,7 @@ class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
 
   UserModel? _currentUser;
-  bool _isLoading = false;
+  bool _isLoading = true;
   String _errorMessage = '';
 
   UserModel? get currentUser => _currentUser;
@@ -25,6 +25,7 @@ class AuthProvider with ChangeNotifier {
       } else {
         _currentUser = null;
       }
+      _isLoading = false;
       notifyListeners();
     });
   }
